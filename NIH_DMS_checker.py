@@ -38,7 +38,7 @@ def run():
         dms_text = st.text_input("Paste the text of your Data Management & Sharing plan to check")
 
     st.sidebar.markdown('# Made by: [David Abugaber](https://github.com/dabugaber_deloitte)')
-    st.sidebar.markdown('# Git link: [Docsummarizer](https://github.com/e-johnstonn/docsummarizer)')
+    st.sidebar.markdown('# Git link: [Docsummarizer](https://github.com/abugaberd/dataplanmanager)')
     
     with st.sidebar:
       st.title('🦙💬 Llama 2 Chatbot')
