@@ -41,7 +41,7 @@ def run():
     st.sidebar.markdown('# Git link: [Docsummarizer](https://github.com/abugaberd/dataplanmanager)')
     
     with st.sidebar:
-      st.title('🦙💬 Llama 2 Chatbot')
+      st.title('NIH DMS checker')
       if 'REPLICATE_API_TOKEN' in st.secrets:
             st.success('API key already provided!', icon='✅')
             replicate_api = st.secrets['REPLICATE_API_TOKEN']
@@ -54,14 +54,14 @@ def run():
       os.environ['REPLICATE_API_TOKEN'] = replicate_api
 
       st.subheader('Models and parameters')
-      selected_model = st.sidebar.selectbox('Choose a Llama2 model', ['Llama2-7B', 'Llama2-13B'], key='selected_model')
+      selected_model = st.sidebar.selectbox('Choose a language model', ['Llama2-7B', 'Llama2-13B'], key='selected_model')
       if selected_model == 'Llama2-7B':
           llm = 'a16z-infra/llama7b-v2-chat:4f0a4744c7295c024a1de15e1a63c880d3da035fa1f49bfd344fe076074c8eea'
       elif selected_model == 'Llama2-13B':
           llm = 'a16z-infra/llama13b-v2-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5'
       temperature = st.sidebar.slider('temperature', min_value=0.01, max_value=5.0, value=0.1, step=0.01)
       top_p = st.sidebar.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
-      max_length = st.sidebar.slider('max_length', min_value=32, max_value=512, value=120, step=8)
+      max_length = st.sidebar.slider('max_length', min_value=32, max_value=4096, value=120, step=8)
 
     def generate_llama2_response(prompt_input):
       string_dialogue = "Here is a policy from a government agency, paired with a data management plan | GOVERNMENT POLICY: All plans must include: 1) Data Type: Describe the data to be managed, preserved, and shared, including: summary of the types/estimated amount of scientific data. Descriptions may indicate modality (e.g., imaging, genomic, mobile, survey), level of aggregation (e.g., individual, aggregated, summarized), and/or degree of data processing. Describe which scientific data will be preserved and shared. Provide rationale for these decisions based on ethical, legal, and technical factors. Include brief listing of metadata, other relevant data, and associated documentation (e.g., study protocols and data collection instruments) that will be made available. Indicate what specialized tools are needed to access/manipulate data. If applicable, specify whether tools are free, available from the marketplace, or only available from the research team. Indicate whether such tools are likely to remain available for as long as the data are available. 2) Standards: Indicate what standards will apply to data/metadata (i.e., formats, dictionaries, identifiers, definitions, unique identifiers, other documentation). 3) Data Preservation, Access, and Associated Timelines, including: Name of repositories where scientific data/metadata will be archived; How data will be findable/identifiable, i.e., via persistent unique identifiers or standard indexing tools; When data will be available and for how long. Data should be shared ASAP, and no later than time of an associated publication or end of performance period, whichever comes first. Data should be available for as long as would be useful. Identify any differences in timelines for different subsets of data. 4) Access, Distribution, or Reuse Considerations: Researchers should maximize the appropriate sharing of data. Describe applicable factors affecting subsequent access, distribution, or reuse of scientific data related to: Informed consent (e.g., disease-specific limitations, particular communities’ concerns); Privacy/confidentiality protections (i.e., de-identification, Certificates of Confidentiality, other protective measures) consistent with federal, Tribal, state, and local laws, regulations, and policies; Whether access to data derived from humans will be controlled (i.e., made available only after approval); Any restrictions imposed by federal, Tribal, or state laws, regulations, or policies, or existing/anticipated agreements (e.g., with third party funders, partners, HIPAA-covered, through licensing limitations); Any other considerations that limit extent of data sharing. 5) Oversight of Data Management and Sharing: Indicate how compliance with the Plan will be monitored and managed, frequency of oversight, and by whom (e.g., titles, roles). NOTE: Scientific data do not include laboratory notebooks, preliminary analyses, completed case report forms, drafts of scientific papers, plans for future research, peer reviews, communications with colleagues, or physical objects, such as laboratory specimens. | Determine whether the following data management plan adheres to the government policy, and explain why or why not. | DATA MANAGEMENT PLAN: "
