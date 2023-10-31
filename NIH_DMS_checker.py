@@ -57,6 +57,7 @@ def run():
             else:
                 st.success('Proceed to entering your prompt message!', icon='👉')
       os.environ['REPLICATE_API_TOKEN'] = replicate_api
+
       st.subheader('Models and parameters')
       selected_model = st.sidebar.selectbox('Choose a Llama2 model', ['Llama2-7B', 'Llama2-13B'], key='selected_model')
       if selected_model == 'Llama2-7B':
