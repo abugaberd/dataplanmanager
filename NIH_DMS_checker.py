@@ -27,21 +27,26 @@ def run():
         page_icon="👋",
     )
 
-    st.title("NIH Data Management & Sharing Plan Checker")
+    st.title("NIH DMS Plan Checker")
 
-    input_method = st.radio("Select input method", ('Upload a document', 'Paste in text'))
+    st.markdown(
+            """
+            This tool facilitates the process of revising Data Management & Sharing (DMS) plans to determine whether they conform to official National Institutes of Health policy. Disclaimer: this genAI writing tool is not intended to replace a final human judgment of the plan's adherence to policy. Always keep a human in the loop!
+
+            **👈 You can customize model parameters via the sidebar**
+            """
+        )
+
+    input_method = st.radio("Select input method please", ('Upload a document', 'Paste in text'))
 
     if input_method == 'Upload a document':
         uploaded_file = st.file_uploader("Upload a Data Management & Sharing plan to check", type=['txt', 'pdf', 'doc', 'docx'])
 
     if input_method == 'Paste in text':
         dms_text = st.text_input("Paste the text of your Data Management & Sharing plan to check")
-
-    st.sidebar.markdown('# Made by: [David Abugaber](https://github.com/dabugaber_deloitte)')
-    st.sidebar.markdown('# Git link: [Docsummarizer](https://github.com/abugaberd/dataplanmanager)')
     
     with st.sidebar:
-      st.title('NIH DMS checker')
+      st.title('Customize Model Parameters')
       if 'REPLICATE_API_TOKEN' in st.secrets:
             st.success('API key already provided!', icon='✅')
             replicate_api = st.secrets['REPLICATE_API_TOKEN']
@@ -54,24 +59,24 @@ def run():
       os.environ['REPLICATE_API_TOKEN'] = replicate_api
 
       st.subheader('Models and parameters')
-      selected_model = st.sidebar.selectbox('Choose a language model', ['Llama2-7B', 'Llama2-13B'], key='selected_model')
+      selected_model = st.sidebar.selectbox('Choose a Llama2 model', ['Llama2-7B', 'Llama2-13B'], key='selected_model')
       if selected_model == 'Llama2-7B':
           llm = 'a16z-infra/llama7b-v2-chat:4f0a4744c7295c024a1de15e1a63c880d3da035fa1f49bfd344fe076074c8eea'
       elif selected_model == 'Llama2-13B':
           llm = 'a16z-infra/llama13b-v2-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5'
-      temperature = st.sidebar.slider('temperature', min_value=0.01, max_value=5.0, value=0.1, step=0.01)
-      top_p = st.sidebar.slider('top_p', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
-      max_length = st.sidebar.slider('max_length', min_value=32, max_value=4096, value=120, step=8)
+      temperature = st.sidebar.slider('temperature (how creative the model is; higher value -> more unusual responses)', min_value=0.01, max_value=5.0, value=0.1, step=0.01)
+      top_p = st.sidebar.slider('top_p (how creative the model is; higher value -> more unusual responses)', min_value=0.01, max_value=1.0, value=0.9, step=0.01)
+      max_length = st.sidebar.slider('Minimum and maximum response length, roughly in number of words', min_value=32, max_value=512, value=120, step=8)
+      
+      instructions_text = st.text_input("Manually edit the wording of the initial, context-setting instruction describing the task for the model:", "Here is a government policy regarding Data Management & Sharing plans: ")
+      policy_text = st.text_input("Manually edit the wording of the NIH policy that is presented to the model here:", "NIH recommends addressing all Elements described below: 1. Data Type: Briefly describe the scientific data to be managed, preserved, and shared, including: A general summary of the types and estimated amount of scientific data to be generated and/or used in the research. Describe data in general terms that address the type and amount/size of scientific data expected to be collected and used in the project (e.g., 256-channel EEG data and fMRI images from ~50 research participants). Descriptions may indicate the data modality (e.g., imaging, genomic, mobile, survey), level of aggregation (e.g., individual, aggregated, summarized), and/or the degree of data processing that has occurred (i.e., how raw or processed the data will be). A description of which scientific data from the project will be preserved and shared. NIH does not anticipate that researchers will preserve and share all scientific data generated in a study. Researchers should decide which scientific data to preserve and share based on ethical, legal, and technical factors that may affect the extent to which scientific data are preserved and shared. Provide the rationale for these decisions. A brief listing of the metadata, other relevant data, and any associated documentation (e.g., study protocols and data collection instruments) that will be made accessible to facilitate interpretation of the scientific data. 2. Related Tools, Software and/or Code: An indication of whether specialized tools are needed to access or manipulate shared scientific data to support replication or reuse, and name(s) of the needed tool(s) and software. If applicable, specify how needed tools can be accessed, (e.g., open source and freely available, generally available for a fee in the marketplace, available only from the research team) and, if known, whether such tools are likely to remain available for as long as the scientific data remain available. 3. Standards: An indication of what standards will be applied to the scientific data and associated metadata (i.e., data formats, data dictionaries, data identifiers, definitions, unique identifiers, and other data documentation). While many scientific fields have developed and adopted common data standards, others have not. In such cases, the Plan may indicate that no consensus data standards exist for the scientific data and metadata to be generated, preserved, and shared. 4. Data Preservation, Access, and Associated Timelines: Plans and timelines for data preservation and access, including: The name of the repository(ies) where scientific data and metadata arising from the project will be archived. NIH has provided additional information to assist in selecting suitable repositories for scientific data resulting from funded research (NOT-OD-21-016). How the scientific data will be findable and identifiable, i.e., via a persistent unique identifier or other standard indexing tools. When the scientific data will be made available to other users (i.e., the larger research community, institutions, and/or the broader public) and for how long. NIH encourages scientific data be shared as soon as possible, and no later than time of an associated publication or end of the performance period, whichever comes first. Researchers are encouraged to consider relevant requirements and expectations (e.g., data repository policies, award record retention requirements, journal policies) as guidance for the minimum time frame scientific data should be made available. NIH encourages researchers to make scientific data available for as long as they anticipate it being useful for the larger research community, institutions, and/or the broader public. Identify any differences in timelines for different subsets of scientific data to be shared. 5. Access, Distribution, or Reuse Considerations: NIH expects that in drafting Plans, researchers maximize the appropriate sharing of scientific data generated from NIH-funded or conducted research, consistent with privacy, security, informed consent, and proprietary issues. Describe any applicable factors affecting subsequent access, distribution, or reuse of scientific data related to: Informed consent (e.g., disease-specific limitations, particular communities’ concerns). Privacy and confidentiality protections (i.e., de-identification, Certificates of Confidentiality, and other protective measures) consistent with applicable federal, Tribal, state, and local laws, regulations, and policies. Whether access to scientific data derived from humans will be controlled (i.e., made available by a data repository only after approval). Any restrictions imposed by federal, Tribal, or state laws, regulations, or policies, or existing or anticipated agreements (e.g., with third party funders, with partners, with Health Insurance Portability and Accountability Act (HIPAA) covered entities that provide Protected Health Information under a data use agreement, through licensing limitations attached to materials needed to conduct the research). Any other considerations that may limit the extent of data sharing. 6. Oversight of Data Management and Sharing: Indicate how compliance with the Plan will be monitored and managed, frequency of oversight, and by whom (e.g., titles, roles). NOTE: Scientific data is the recorded factual material commonly accepted in the scientific community as of sufficient quality to validate and replicate research findings, regardless of whether the data are used to support scholarly publications. Scientific data do not include laboratory notebooks, preliminary analyses, completed case report forms, drafts of scientific papers, plans for future research, peer reviews, communications with colleagues, or physical objects, such as laboratory specimens.")
+      introduceexample_text = st.text_input("Manually edit the wording of the instructions between the NIH policy and the example DMS plan:", "Now that you've read the government policy, consider the following example Data Management & Sharing plan: ")
+      finalquestion_text = st.text_input("Manually edit the wording of the final question fed into the model here:", "Now read the following Data Management & Sharing plan and determine whether it follows the government policy: ")
 
     def generate_llama2_response(prompt_input):
-      string_dialogue = "Here is a policy from a government agency, paired with a data management plan | GOVERNMENT POLICY: All plans must include: 1) Data Type: Describe the data to be managed, preserved, and shared, including: summary of the types/estimated amount of scientific data. Descriptions may indicate modality (e.g., imaging, genomic, mobile, survey), level of aggregation (e.g., individual, aggregated, summarized), and/or degree of data processing. Describe which scientific data will be preserved and shared. Provide rationale for these decisions based on ethical, legal, and technical factors. Include brief listing of metadata, other relevant data, and associated documentation (e.g., study protocols and data collection instruments) that will be made available. Indicate what specialized tools are needed to access/manipulate data. If applicable, specify whether tools are free, available from the marketplace, or only available from the research team. Indicate whether such tools are likely to remain available for as long as the data are available. 2) Standards: Indicate what standards will apply to data/metadata (i.e., formats, dictionaries, identifiers, definitions, unique identifiers, other documentation). 3) Data Preservation, Access, and Associated Timelines, including: Name of repositories where scientific data/metadata will be archived; How data will be findable/identifiable, i.e., via persistent unique identifiers or standard indexing tools; When data will be available and for how long. Data should be shared ASAP, and no later than time of an associated publication or end of performance period, whichever comes first. Data should be available for as long as would be useful. Identify any differences in timelines for different subsets of data. 4) Access, Distribution, or Reuse Considerations: Researchers should maximize the appropriate sharing of data. Describe applicable factors affecting subsequent access, distribution, or reuse of scientific data related to: Informed consent (e.g., disease-specific limitations, particular communities’ concerns); Privacy/confidentiality protections (i.e., de-identification, Certificates of Confidentiality, other protective measures) consistent with federal, Tribal, state, and local laws, regulations, and policies; Whether access to data derived from humans will be controlled (i.e., made available only after approval); Any restrictions imposed by federal, Tribal, or state laws, regulations, or policies, or existing/anticipated agreements (e.g., with third party funders, partners, HIPAA-covered, through licensing limitations); Any other considerations that limit extent of data sharing. 5) Oversight of Data Management and Sharing: Indicate how compliance with the Plan will be monitored and managed, frequency of oversight, and by whom (e.g., titles, roles). NOTE: Scientific data do not include laboratory notebooks, preliminary analyses, completed case report forms, drafts of scientific papers, plans for future research, peer reviews, communications with colleagues, or physical objects, such as laboratory specimens. | Determine whether the following data management plan adheres to the government policy, and explain why or why not. | DATA MANAGEMENT PLAN: "
-      #for dict_message in st.session_state.messages:
-      #    if dict_message["role"] == "user":
-      #        string_dialogue += "User: " + dict_message["content"] + "\n\n"
-      #    else:
-      #        string_dialogue += "Assistant: " + dict_message["content"] + "\n\n"
+          
       output = replicate.run('a16z-infra/llama13b-v2-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5', 
-                            input={"prompt": f"{string_dialogue} {prompt_input} | Does this Data Management & Sharing plan follow the government policy? Why or why not?: ",
+                            input={"prompt": f"{instructions_text}{policy_text}{introduceexample_text}{prompt_input} {finalquestion_text}: ",
                                     "temperature":temperature, "top_p":top_p, "max_length":max_length, "repetition_penalty":1})
       return output
 
@@ -96,8 +101,10 @@ def run():
       st.markdown(full_response[0], unsafe_allow_html=True)
           # process_summarize_button(doc, replicate_api)
           #process_summarize_button(doc, api_key, use_gpt_4, find_clusters, file=False)
+    
     st.markdown('[Author email](mailto:dabugaber@deloitte.com)')
-
+    
+    
     
 if __name__ == "__main__":
     run()
